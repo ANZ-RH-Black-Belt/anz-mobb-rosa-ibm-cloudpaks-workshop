@@ -26,6 +26,12 @@ export API_SERVER=$(rosa describe cluster --cluster rosa-${GUID} -o json  | jq -
 echo "export API_SERVER=${API_SERVER}" >>$HOME/.bashrc
 ----
 
+[NOTE]
+====
+You will need to wait for a minute or two whilst the cluster-admin account is created on the ROSA cluser.
+====
+
+[start=3]
 . Login to the ROSA cluster with your cluster-admin credentials
 +
 [source,sh,role=execute]

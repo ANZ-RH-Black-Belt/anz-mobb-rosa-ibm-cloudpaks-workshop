@@ -15,18 +15,6 @@ ROSA Console URL
 [source,sh]
 ----
 https://console-openshift-console.%rosa_subdomain_base%
-
-GUID>> %guid%
-AWS CONSOLE URL>> %aws_web_console_url%
-AWS CONSOLE USERNAME>> %aws_web_console_user_name%
-AWS CONSOLE PASSWORD>> %aws_web_console_password%
-ROSA CONSOLE USERNAME>> %rosa_console_user_name%
-ROSA CONSOLE PASSWORD>> %rosa_console_password%
-ROSA BASTION USER NAME>> %rosa_bastion_user_name%
-ROSA USER PASSWORD>> %rosa_user_password%
-ROSA SUBDOMAIN BASE>> %rosa_subdomain_base%
-ROSA SANDBOX ACCOUNT ID>> %rosa_sandbox_account_id%
-ROSA CONSOLE URL>> %rosa_console_url%
 ----
 
 ROSA Admin Password
@@ -379,7 +367,7 @@ parameters:
 EOF
 ----
 
-== Testing the EFS Storage Class
+== (Optional) Testing the EFS Storage Class
 
 1. Create a namespace
 
@@ -408,7 +396,7 @@ spec:
 EOF
 ----
 
-[start=2]
+[start=3]
 . Create a Centos Pod to write to the EFS Volume
 
 [source,sh,role=execute]
@@ -440,7 +428,7 @@ EOF
 It may take a few minutes for the pod to be ready. If you see errors such as Output: Failed to resolve "fs-XXXX.efs.us-east-2.amazonaws.com" it likely means its still setting up the EFS volume, just wait longer.
 ====
 
-[start=3]
+[start=4]
 . Wait for the Pod to be ready
 
 [source,sh,role=execute]
@@ -448,7 +436,7 @@ It may take a few minutes for the pod to be ready. If you see errors such as Out
 watch oc get pod test-efs
 ----
 
-[start=4]
+[start=5]
 . Create a Pod to read from the EFS Volume
 
 [source,sh,role=execute]
@@ -475,3 +463,22 @@ EOF
 
 ----
 
+[start=6]
+. Verify the second POD can read the EFS Volume
+
+[source,texinfo,options=nowrap]
+----
+hello efs
+hello efs
+hello efs
+hello efs
+hello efs
+hello efs
+----
+
+[start=7]
+. Cleanup Storage test
+[source,texinfo,role=execute]
+----
+oc delete project efs-demo
+----

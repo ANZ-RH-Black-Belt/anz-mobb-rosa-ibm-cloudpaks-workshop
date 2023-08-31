@@ -12,57 +12,30 @@ Though the recommended approach is to use a formal identity provider to access t
 +
 [source,sh,role=execute]
 ----
-rosa create admin --cluster rosa-${GUID}
+rosa create admin --cluster rosa-${GUID} -o yaml > cluster_admin.yaml
 ----
-+
-.Sample Output
-[source,texinfo,options=nowrap]
-----
-I: Admin account has been added to cluster 'rosa-4fgbq'.
-I: Please securely store this generated password. If you lose this password you can delete and recreate the cluster admin user.
-I: To login, run the following command:
 
-   oc login https://api.rosa-4fgbq.qrdf.p1.openshiftapps.com:6443 --username cluster-admin --password cD4xo-AnanH-DvB6L-6yndM
-
-I: It may take up to 5 minutes for the account to become active.
-----
-+
-[TIP]
-====
-Save the login command somewhere. Also take note of the password for your `cluster-admin` user.
-
-*Make sure to use the entire password when copying and pasting the command!*
-====
-
-. Save an environment variable for your admin password (copy the password from above making sure to copy the *entire* password):
-+
-.Note this box will not automatically copy the command for you. You need to write the command yourself.
-[source,sh]
-----
-export ADMIN_PASSWORD=cD4xo-AnanH-DvB6L-6yndM
-----
-+
-Save the admin password in your `.bashrc`
+. Save an environment variable for your admin password and api server:
 +
 [source,sh,role=execute]
 ----
+export ADMIN_PASSWORD=$(cat cluster_admin.yaml | grep password | awk '{print $2}')
 echo "export ADMIN_PASSWORD=${ADMIN_PASSWORD}" >>$HOME/.bashrc
+
+export API_SERVER=$(rosa describe cluster --cluster rosa-${GUID} -o json  | jq -r .api.url)
+echo "export API_SERVER=${API_SERVER}" >>$HOME/.bashrc
 ----
 
-. Copy the login command returned to you in the previous step and paste that into your terminal. This should log you into the cluster via the CLI so you can start using the cluster (answer `y` when promted if you want to accept the certificate).
+. Login to the ROSA cluster with your cluster-admin credentials
 +
-[source,sh]
+[source,sh,role=execute]
 ----
-oc login https://api.rosa-4fgbq.qrdf.p1.openshiftapps.com:6443 --username cluster-admin --password cD4xo-AnanH-DvB6L-6yndM
+oc login $API_SERVER --username cluster-admin --password $ADMIN_PASSWORD --insecure-skip-tls-verify=true
 ----
 +
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
-The server uses a certificate signed by an unknown authority.
-You can bypass the certificate check, but any data you send to the server could be intercepted by others.
-Use insecure connections? (y/n): y
-
 WARNING: Using insecure TLS client config. Setting this option is not supported!
 
 Login successful.

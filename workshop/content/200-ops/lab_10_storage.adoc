@@ -15,18 +15,33 @@ ROSA Console URL
 [source,sh]
 ----
 https://console-openshift-console.%rosa_subdomain_base%
----
+
+GUID>> %guid%
+AWS CONSOLE URL>> %aws_web_console_url%
+AWS CONSOLE USERNAME>> %aws_web_console_user_name%
+AWS CONSOLE PASSWORD>> %aws_web_console_password%
+ROSA CONSOLE USERNAME>> %rosa_console_user_name%
+ROSA CONSOLE PASSWORD>> %rosa_console_password%
+ROSA BASTION USER NAME>> %rosa_bastion_user_name%
+ROSA USER PASSWORD>> %rosa_user_password%
+ROSA SUBDOMAIN BASE>> %rosa_subdomain_base%
+ROSA SANDBOX ACCOUNT ID>> %rosa_sandbox_account_id%
+ROSA CONSOLE URL>> %rosa_console_url%
+----
 
 ROSA Admin Password
-[source,sh]
+[source,sh,role=execute]
 ----
-GET THE PASSWORD HERE SOMEHOW echo $(PASSWORD)
+echo $ADMIN_PASSWORD
 ----
 
-OC LOGIN STRING?
+Login string for OC Cli
+[source,sh,role=execute]
+----
+oc login $API_SERVER --username cluster-admin --password $ADMIN_PASSWORD --insecure-skip-tls-verify=true
+----
 
-
---
+-- 
 
 == Elastic File System (EFS)
 
@@ -55,14 +70,20 @@ Set some environment variables
 [source,sh,role=execute]
 ----
 export CLUSTER_NAME=rosa-${GUID}
+echo "export CLUSTER_NAME=${CLUSTER_NAME}" >>$HOME/.bashrc
 export AWS_REGION=$(aws configure get region)
+echo "export AWS_REGION=${AWS_REGION}" >>$HOME/.bashrc
 export OIDC_PROVIDER=$(oc get authentication.config.openshift.io cluster -o json | jq -r .spec.serviceAccountIssuer | sed -e "s/^https:\/\///")
+echo "export OIDC_PROVIDER=${OIDC_PROVIDER}" >>$HOME/.bashrc
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+echo "export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}" >>$HOME/.bashrc
 export SCRATCH_DIR=~/scratch
 export AWS_PAGER=""
 mkdir -p $SCRATCH_DIR
 export FILE_STORAGECLASS=efs-sc
+echo "export FILE_STORAGECLASS=${FILE_STORAGECLASS}" >>$HOME/.bashrc
 export BLOCK_STORAGECLASS=gp3
+echo "export BLOCK_STORAGECLASS=${BLOCK_STORAGECLASS}" >>$HOME/.bashrc
 ----
 
 In order to use the AWS EFS CSI Driver we need to create IAM roles and policies that can be attached to the Operator.
@@ -99,6 +120,18 @@ cat << EOF > $SCRATCH_DIR/efs-policy.json
     },
     {
       "Effect": "Allow",
+      "Action": [
+        "elasticfilesystem:TagResource"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:ResourceTag/efs.csi.aws.com/cluster": "true"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
       "Action": "elasticfilesystem:DeleteAccessPoint",
       "Resource": "*",
       "Condition": {
@@ -112,7 +145,8 @@ cat << EOF > $SCRATCH_DIR/efs-policy.json
 EOF
 ----
 
-2. Create the Policy
+[start=2]
+. Create the Policy
 
 This creates a named policy for the cluster, you could use a generic policy for multiple clusters to keep things simpler.
 
@@ -120,10 +154,12 @@ This creates a named policy for the cluster, you could use a generic policy for 
 ----
 export POLICY=$(aws iam create-policy --policy-name "${CLUSTER_NAME}-rosa-efs-csi" --policy-document file://$SCRATCH_DIR/efs-policy.json --query 'Policy.Arn' --output text) || POLICY=$(aws iam list-policies --query "Policies[?PolicyName=='${CLUSTER_NAME}-rosa-efs-csi'].Arn" --output text)
 
-echo $POLICY
+echo "export POLICY=${POLICY}" >>$HOME/.bashrc
 ----
 
-3. Create a trust policy
+[start=3]
+. Create a trust policy
+
 [source,sh,role=execute]
 ----
 cat <<EOF > $SCRATCH_DIR/TrustPolicy.json
@@ -149,24 +185,30 @@ cat <<EOF > $SCRATCH_DIR/TrustPolicy.json
 }
 EOF
 ----
-4. Create Role for the EFS CSI Driver Operator
+
+[start=4]
+. Create Role for the EFS CSI Driver Operator
 
 [source,sh,role=execute]
 ----
 export ROLE=$(aws iam create-role --role-name "${CLUSTER_NAME}-aws-efs-csi-operator" --assume-role-policy-document file://$SCRATCH_DIR/TrustPolicy.json --query "Role.Arn" --output text)
 
+echo "export ROLE=${ROLE}" >>$HOME/.bashrc
+
 echo $ROLE
 ----
-5. Attach the Policies to the Role
+
+[start=5]
+. Attach the Policies to the Role
 
 [source,sh,role=execute]
 ----
 aws iam attach-role-policy --role-name "${CLUSTER_NAME}-aws-efs-csi-operator" --policy-arn $POLICY
 ----
 
-== Deploy and test the AWS EFS Operator
+== Deploy the AWS EFS Operator
 
-1. Create a Secret to tell the AWS EFS Operator which IAM role to request.
+. Create a Secret to tell the AWS EFS Operator which IAM role to request.
 
 [source,sh,role=execute]
 ----
@@ -185,7 +227,8 @@ EOF
 
 ----
 
-2. Install the EFS Operator
+[start=2]
+. Install the EFS Operator
 
 [source,sh,role=execute]
 ----
@@ -212,7 +255,8 @@ spec:
 EOF
 ----
 
-3. Wait until the Operator is running
+[start=3]
+. Wait until the Operator is running
 
 [source,sh,role=execute]
 ----
@@ -226,8 +270,8 @@ NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 aws-efs-csi-driver-operator   1/1     1            1           2m35s
 ----
 
-
-4. Install the AWS EFS CSI Driver
+[start=4]
+. Install the AWS EFS CSI Driver
 
 [source,sh,role=execute]
 ----
@@ -241,12 +285,14 @@ spec:
 EOF
 ----
 
-5. Wait until the CSI driver is running
+[start=5]
+. Wait until the CSI driver is running
 
 [source,sh,role=execute]
 ----
 watch oc get daemonset aws-efs-csi-driver-node -n openshift-cluster-csi-drivers
 ----
+
 .Sample Output of completed CSI driver deployment
 [source,texinfo,options=nowrap]
 ----
@@ -261,17 +307,20 @@ aws-efs-csi-driver-node   7         7         7       7            7           k
 [source,sh,role=execute]
 ----
 export NODE=$(oc get nodes --selector=node-role.kubernetes.io/worker -o jsonpath='{.items[0].metadata.name}')
+echo "export NODE=${NODE}" >>$HOME/.bashrc
 
 export VPC=$(aws ec2 describe-instances --filters "Name=private-dns-name,Values=$NODE" --query 'Reservations[*].Instances[*].{VpcId:VpcId}' --region $AWS_REGION | jq -r '.[0][0].VpcId')
+echo "export VPC=${VPC}" >>$HOME/.bashrc
 
 export CIDR=$(aws ec2 describe-vpcs --filters "Name=vpc-id,Values=$VPC" --query 'Vpcs[*].CidrBlock' --region $AWS_REGION | jq -r '.[0]')
+echo "export CIDR=${CIDR}" >>$HOME/.bashrc
 
 export SG=$(aws ec2 describe-instances --filters "Name=private-dns-name,Values=$NODE" --query 'Reservations[*].Instances[*].{SecurityGroups:SecurityGroups}' --region $AWS_REGION | jq -r '.[0][0].SecurityGroups[0].GroupId')
-
-echo "CIDR - $CIDR,  SG - $SG"
+echo "export SG=${SG}" >>$HOME/.bashrc
 ----
 
-2. Assuming the CIDR and SG are correct, update the security group
+[start=2]
+. Assuming the CIDR and SG are correct, update the security group
 
 [source,sh,role=execute]
 ----
@@ -287,11 +336,11 @@ At this point you can create either a single Zone EFS filesystem, or a Region wi
 [source,sh,role=execute]
 ----
 export EFS=$(aws efs create-file-system --creation-token efs-token-1 --region ${AWS_REGION} --encrypted | jq -r '.FileSystemId')
-
-echo $EFS
+echo "export EFS=${EFS}" >>$HOME/.bashrc
 ----
 
-2. Configure a region-wide Mount Target for EFS (this will create a mount point in each subnet of your VPC by default)
+[start=2]
+. Configure a region-wide Mount Target for EFS (this will create a mount point in each subnet of your VPC by default)
 
 [source,sh,role=execute]
 ----
@@ -306,9 +355,11 @@ for SUBNET in $(aws ec2 describe-subnets \
        | jq -r '.MountTargetId'); \
     echo $MOUNT_TARGET; \
  done
+echo "export MOUNT_TARGET=${MOUNT_TARGET}" >>$HOME/.bashrc
 ----
 
-3. Create a Storage Class for the EFS volume
+[start=3]
+. Create a Storage Class for the EFS volume
 
 [source,sh,role=execute]
 ----
@@ -337,7 +388,8 @@ EOF
 oc new-project efs-demo
 ----
 
-2. Create a PVC
+[start=2]
+. Create a PVC
 
 [source,sh,role=execute]
 ----
@@ -356,7 +408,8 @@ spec:
 EOF
 ----
 
-3. Create a Centos Pod to write to the EFS Volume
+[start=2]
+. Create a Centos Pod to write to the EFS Volume
 
 [source,sh,role=execute]
 ----
@@ -387,14 +440,16 @@ EOF
 It may take a few minutes for the pod to be ready. If you see errors such as Output: Failed to resolve "fs-XXXX.efs.us-east-2.amazonaws.com" it likely means its still setting up the EFS volume, just wait longer.
 ====
 
-4. Wait for the Pod to be ready
+[start=3]
+. Wait for the Pod to be ready
 
 [source,sh,role=execute]
 ----
 watch oc get pod test-efs
 ----
 
-5. Create a Pod to read from the EFS Volume
+[start=4]
+. Create a Pod to read from the EFS Volume
 
 [source,sh,role=execute]
 ----
@@ -420,37 +475,3 @@ EOF
 
 ----
 
-
-[source,sh,role=execute]
-----
-----
-
-
-
-
-----------------------------------------------------------------------------------------------------
-[TIP]
-====
-Answer `yes` when asked if to accept the host key.
-
-The password for the user %rosa_bastion_user_name% is `%rosa_user_password%`
-====
-+
-[source,sh,role=execute]
-----
-ssh %rosa_bastion_user_name%@bastion.%rosa_subdomain_base%
-----
-+
-.Click in the box below to copy and paste the string `yes` to your terminal:
-+
-[source,sh,role=execute]
-----
-yes
-----
-+
-.Click in the box below to copy and paste the password to your terminal:
-+
-[source,sh,role=execute]
-----
-%rosa_user_password%
-----

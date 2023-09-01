@@ -14,8 +14,11 @@ Bastion SSH password
 ROSA Console URL
 [source,sh]
 ----
-https://console-openshift-console.apps.%rosa_subdomain_base%
+echo $CONSOLE_URL
+----
 
+[source,sh]
+----
 username: cluster-admin
 password: <see below>
 ----
@@ -33,7 +36,6 @@ oc login $API_SERVER --username cluster-admin --password $ADMIN_PASSWORD --insec
 ----
 
 -- 
-
 == Elastic File System (EFS)
 
 
@@ -468,6 +470,11 @@ EOF
 
 [start=6]
 . Verify the second POD can read the EFS Volume
+
+[source,sh,role=execute]
+----
+oc logs -f test-efs-read
+----
 
 [source,texinfo,options=nowrap]
 ----

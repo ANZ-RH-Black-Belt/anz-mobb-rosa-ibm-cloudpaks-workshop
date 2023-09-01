@@ -269,13 +269,15 @@ ID                                NAME        STATE
 +
 [source,sh,role=execute]
 ----
-rosa describe cluster -c rosa-${GUID} | grep Console
+export CONSOLE_URL=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .console.url)
+echo "export CONSOLE_URL=${CONSOLE_URL}" >>$HOME/.bashrc
+echo $CONSOLE_URL
 ----
 +
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
-Console URL:                https://console-openshift-console.%rosa_subdomain_base%
+https://console-openshift-console.%rosa_subdomain_base%
 ----
 
 The cluster has now been successfully deployed.

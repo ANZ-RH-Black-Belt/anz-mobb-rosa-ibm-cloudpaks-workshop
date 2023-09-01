@@ -1,0 +1,51 @@
+:markup-in-source: verbatim,attributes,quotes
+
+[sidebar]
+.ROSA Environment Details
+--
+SSH to Bastion
+[source,sh,role=execute]
+----
+ssh %rosa_bastion_user_name%@bastion.%rosa_subdomain_base%
+----
+Bastion SSH password
+[source,sh,role=execute]
+----
+%rosa_user_password%
+----
+ROSA Console URL
+[source,sh]
+----
+https://console-openshift-console.apps.%rosa_subdomain_base%
+
+username: cluster-admin
+password: <see below>
+----
+
+ROSA Admin Password
+[source,sh,role=execute]
+----
+echo $ADMIN_PASSWORD
+----
+
+Login string for OC Cli
+[source,sh,role=execute]
+----
+oc login $API_SERVER --username cluster-admin --password $ADMIN_PASSWORD --insecure-skip-tls-verify=true
+----
+
+-- 
+
+
+== Tekton CLI (if required)
+
+. Run this command to create the admin user
++
+[source,sh,role=execute]
+----
+wget https://github.com/tektoncd/cli/releases/download/v0.31.2/tkn_0.31.2_Linux_x86_64.tar.gz
+mkdir ~/tekton
+tar xvzf tkn_0.31.2_Linux_x86_64.tar.gz -C ~/tekton/ tkn
+export PATH="~/tekton:$PATH"
+echo "export PATH=${PATH}" >>$HOME/.bashrc
+----

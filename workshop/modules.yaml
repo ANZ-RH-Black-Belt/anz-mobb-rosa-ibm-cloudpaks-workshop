@@ -1,3 +1,4 @@
+#TODO - match published modules with workshop.yaml
 ---
 modules:
   index:
@@ -14,6 +15,9 @@ modules:
 #   exit_sign: Continue
   100-setup/3-access-cluster:
     name: Create an Admin User
+    exit_sign: Continue
+  100-setup/4-additional-tools:
+    name: Additional Tooling
     exit_sign: Continue
   200-ops/lab_10_storage:
     name: Setup EFS Storage

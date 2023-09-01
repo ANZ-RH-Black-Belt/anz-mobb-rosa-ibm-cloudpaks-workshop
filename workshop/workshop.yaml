@@ -1,3 +1,4 @@
+#TODO - decide on the modules to publish
 ---
 name: ROSA and CloudPaks
 modules:
@@ -7,6 +8,7 @@ modules:
   - 100-setup/2-cluster-creation
 # - 100-setup/2-cluster-creation-hcp
   - 100-setup/3-access-cluster
+  - 100-setup/4-additional-tools
   - 200-ops/lab_10_storage
   # - 200-ops/lab_4_configure_idp
   # - 200-ops/lab_5_cluster_upgrades

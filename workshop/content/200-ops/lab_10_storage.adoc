@@ -14,7 +14,10 @@ Bastion SSH password
 ROSA Console URL
 [source,sh]
 ----
-https://console-openshift-console.%rosa_subdomain_base%
+https://console-openshift-console.apps.%rosa_subdomain_base%
+
+username: cluster-admin
+password: <see below>
 ----
 
 ROSA Admin Password

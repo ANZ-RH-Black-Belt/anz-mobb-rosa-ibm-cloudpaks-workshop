@@ -111,6 +111,12 @@ For this workshop, we've deployed your ROSA cluster with seven total machines (t
 +
 [source,sh,role=execute]
 ----
+export CLUSTER_NAME=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .name)
+----
++
++
+[source,sh,role=execute]
+----
 rosa edit machinepool -c $CLUSTER_NAME --replicas 4 worker
 ----
 +

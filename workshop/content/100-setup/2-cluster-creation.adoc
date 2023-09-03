@@ -269,9 +269,13 @@ ID                                NAME        STATE
 +
 [source,sh,role=execute]
 ----
+export CLUSTER_NAME=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .name)
+echo "export CLUSTER_NAME=${CLUSTER_NAME}" >>$HOME/.bashrc
 export CONSOLE_URL=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .console.url)
 echo "export CONSOLE_URL=${CONSOLE_URL}" >>$HOME/.bashrc
 echo $CONSOLE_URL
+
+
 ----
 +
 .Sample Output

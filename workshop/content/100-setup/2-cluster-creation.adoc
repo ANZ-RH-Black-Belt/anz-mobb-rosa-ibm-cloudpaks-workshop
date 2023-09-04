@@ -132,12 +132,38 @@ rosa create cluster --sts
 . Run the following command to create a cluster with all the default options except for the cluster version.
 +
 Note that for the cluster name you are using `rosa-${GUID}` - the environment variable `GUID` has a unique identifier for your environment that will separate yours from any other ROSA cluster.
-+
-[source,sh,role=execute]
+[NOTE]
+====
+For IBM software please ensure that the latest supported even numbered minor version is selected as the ROSA ${VERSION} variable (e.g. 4.12).
+
+In the following example the latest even version is 4.12.30
+
+[source,sh]
 ----
+$ rosa list version
+
+
+VERSION    DEFAULT    AVAILABLE UPGRADES
+4.13.9     no         
+4.13.8     no         
+4.13.6     no         4.13.8
+4.13.5     no         4.13.6, 4.13.8
+4.13.4     no         4.13.5, 4.13.6, 4.13.8
+4.12.30    yes
+----
+
+====
++
++
+[source,sh]
+----
+rosa list version
+
+export VERSION="4.12.30"
+
 rosa create cluster \
   --cluster-name rosa-${GUID} \
-  --version 4.12.30 \
+  --version ${VERSION} \
   --sts \
   --mode auto \
   --yes

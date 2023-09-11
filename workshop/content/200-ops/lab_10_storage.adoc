@@ -487,7 +487,9 @@ hello efs
 ----
 
 [start=7]
+
 . Cleanup Storage test
+
 [source,texinfo,role=execute]
 ----
 oc delete project efs-demo

@@ -106,20 +106,24 @@ rosa-6n4s8-7hbhw-master-2                  Running   m5.2xlarge   us-east-2   us
 rosa-6n4s8-7hbhw-worker-us-east-2a-xc8g2   Running   m5.xlarge    us-east-2   us-east-2a   22h
 rosa-6n4s8-7hbhw-worker-us-east-2a-zxm8j   Running   m5.xlarge    us-east-2   us-east-2a   22h
 ----
-+
+
 For this workshop, we've deployed your ROSA cluster with seven total machines (two workers, three control planes, and two infrastructure nodes). We will need to scale up the nodes to ensure that we have enough capacity. We are going to scale the machineset up manually.
-+
+
+
+Ensure that the cluster name has been saved to an environment variable
+
 [source,sh,role=execute]
 ----
 export CLUSTER_NAME=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .name)
 ----
-+
-+
+
+Scale up the default worker pool
+
 [source,sh,role=execute]
 ----
 rosa edit machinepool -c $CLUSTER_NAME --replicas 4 worker
 ----
-+
+
 After a few minutes two new nodes will be added to the ROSA cluster and available to schedule workloads to.
 
 

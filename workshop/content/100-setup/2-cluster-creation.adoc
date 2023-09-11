@@ -57,12 +57,12 @@ As mentioned above, if you want the ROSA CLI to automate the creation of the rol
 Make sure that the service role for ELB already exists, otherwise the cluster deployment could fail.
 
 . Run the following to check for the role and create it if it is missing.
-+
+ 
 [source,sh,role=execute]
 ----
 aws iam get-role --role-name "AWSServiceRoleForElasticLoadBalancing" || aws iam create-service-linked-role --aws-service-name "elasticloadbalancing.amazonaws.com"
 ----
-+
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
@@ -101,12 +101,12 @@ asticLoadBalancing",
 If this is the *first time* you are deploying ROSA in this account and have *not yet created the account roles*, then create the account-wide roles and policies, including Operator policies.
 
 . Run the following command to create the account-wide roles:
-+
+ 
 [source,sh,role=execute]
 ----
 rosa create account-roles --mode auto --yes
 ----
-+
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
@@ -130,7 +130,7 @@ rosa create cluster --sts
 === Create the cluster
 
 . Run the following command to create a cluster with all the default options except for the cluster version.
-+
+ 
 Note that for the cluster name you are using `rosa-${GUID}` - the environment variable `GUID` has a unique identifier for your environment that will separate yours from any other ROSA cluster.
 [NOTE]
 ====
@@ -151,16 +151,25 @@ VERSION    DEFAULT    AVAILABLE UPGRADES
 4.13.4     no         4.13.5, 4.13.6, 4.13.8
 4.12.30    yes
 ----
-
 ====
-+
-+
-[source,sh]
+
+[source,sh,role=execute]
 ----
 rosa list version
+----
 
+[NOTE]
+====
+Please cut and paste the following command with the appropriate even numbered ROSA version;
+====
+
+[source,sh]
+----
 export VERSION="4.12.30"
+----
 
+[source,sh,role=execute]
+----
 rosa create cluster \
   --cluster-name rosa-${GUID} \
   --version ${VERSION} \
@@ -168,14 +177,14 @@ rosa create cluster \
   --mode auto \
   --yes
 ----
-+
+
 [NOTE]
 ====
 This will also create the required operator roles and OIDC provider. If you want to see all available options for your cluster use the `--help` flag or for interactive mode you can use `--interactive`.
 ====
-+
+
 You should see a response like the following:
-+
+
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
@@ -197,7 +206,8 @@ I: Created OIDC provider with ARN 'arn:aws:iam::948540395585:oidc-provider/rh-oi
 I: To determine when your cluster is Ready, run 'rosa describe cluster -c rosa-4fgbq'.
 I: To watch your cluster installation logs, run 'rosa logs install -c rosa-4fgbq --watch'.
 ----
-+
+
+
 [TIP]
 ====
 Sometimes AWS isn't quite quick enough creating the prerequisites for the cluster.
@@ -226,62 +236,67 @@ The default settings are as follows:
 === Check installation status
 
 . You can run the following command to check the detailed status of the cluster:
-+
+ 
 [source,sh,role=execute]
 ----
 rosa describe cluster --cluster rosa-${GUID}
 ----
 
 . You can also run the following for an abridged view of the status:
-+
+ 
 [source,sh,role=execute]
 ----
 rosa list clusters
 ----
-+
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
 ID                                NAME        STATE
 22uvcd13s0d1p8jt6589b22cp1m3u9j3  rosa-4fgbq  installing
 ----
-+
+ 
 You should notice the state change from "`waiting`" to "`installing`" to "ready".
-+
+ 
 This will take about 40 minutes to run.
 
 . Once the state changes to "`ready`" your cluster is now installed.
 
-. You can follow along the installation by watching your cluster installation logs:
-+
-[source,sh,role=execute]
+. By watching the cluster logs you can follow the installation process, where you will see logs for actions such as provisioning cloud resources, bootstrapping the OpenShift cluster and OpenShift operators starting up.
+ 
+[source,sh]
 ----
 rosa logs install -c rosa-${GUID} --watch
 ----
 
-. Once you see the following output in the installation log your cluster has finished the installation and is ready to use:
-+
+. You are also able to watch the ROSA API to see the provisioning status
+
+[source,sh,role=execute]
+----
+wait -n 90 rosa describe cluster --cluster rosa-${GUID}
+----
+
+
+. Once you see the following output from the API your cluster has finished the installation and is ready to use:
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
-[ ... Output Omitted ...]
-
-| time="2023-04-05T20:55:39Z" level=debug msg="Still waiting for the cluster to initialize: Cluster operator authentication is not available"
-/ I: Cluster 'rosa-4fgbq' is now ready
+XXXXXXXXXXXXXXXX
 ----
-+
+ 
 [TIP]
 ====
 Sometimes it can happen that the connection to your bastion VM drops. In that case simply follow the instructions in the Setup section to ssh back into your bastion VM.
 ====
 
 . Verify that the cluster is now ready:
-+
+ 
 [source,sh,role=execute]
 ----
 rosa list clusters
 ----
-+
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
@@ -292,7 +307,7 @@ ID                                NAME        STATE
 == Obtain the Console URL
 
 . To get the console URL run:
-+
+ 
 [source,sh,role=execute]
 ----
 export CLUSTER_NAME=$(rosa describe cluster -c rosa-${GUID} -o json | jq -r .name)
@@ -303,7 +318,7 @@ echo $CONSOLE_URL
 
 
 ----
-+
+ 
 .Sample Output
 [source,texinfo,options=nowrap]
 ----

@@ -273,16 +273,25 @@ rosa logs install -c rosa-${GUID} --watch
 
 [source,sh,role=execute]
 ----
-wait -n 90 rosa describe cluster --cluster rosa-${GUID}
+watch -n 90 rosa describe cluster --cluster rosa-${GUID}
 ----
 
 
-. Once you see the following output from the API your cluster has finished the installation and is ready to use:
+. Once you see the following output from the API your cluster has finished the installation and is ready to use. Check the value of the "State" field:
  
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
-XXXXXXXXXXXXXXXX
+Name:                       rosa-mtwxl
+ID:                         26636m4m6nf4pod3r047fiebr1vs680i
+...
+[output omitted]
+...
+Managed Policies:           No
+State:                      ready
+...
+[output omitted]
+...
 ----
  
 [TIP]
@@ -322,7 +331,7 @@ echo $CONSOLE_URL
 .Sample Output
 [source,texinfo,options=nowrap]
 ----
-https://console-openshift-console.%rosa_subdomain_base%
+https://console-openshift-console.apps.rosa-mtwxl.nnst.p1.openshiftapps.com
 ----
 
 The cluster has now been successfully deployed.

@@ -141,7 +141,7 @@ oc whoami --show-console
 .Sample Output
 [source,text,options=nowrap]
 ----
-https://console-openshift-console.%rosa_subdomain_base%
+https://console-openshift-console.apps.rosa-mtwxl.nnst.p1.openshiftapps.com
 ----
 
 . Next, open the printed URL in a web browser.
